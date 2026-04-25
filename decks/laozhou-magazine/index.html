@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>停在港湾的船，不是造船的目的</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0a0b;
+    --ink-rgb:10,10,11;
+    --paper:#f1efea;
+    --paper-rgb:241,239,234;
+    --paper-tint:#e8e5de;
+    --ink-tint:#18181a;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  #deck{position:fixed;inset:0;width:800vw;height:100vh;display:flex;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 10vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:rgba(var(--paper-rgb),.93)}
+  .slide.dark{color:var(--paper);background:rgba(var(--ink-rgb),.93)}
+  .slide.hero.light{background:linear-gradient(180deg,rgba(var(--paper-rgb),.78),rgba(var(--paper-rgb),.92))}
+  .slide.hero.dark{background:linear-gradient(180deg,rgba(var(--ink-rgb),.70),rgba(var(--ink-rgb),.90))}
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.72}
+  .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.72}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.9;font-size:13px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.72;margin-bottom:2.4vh}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.86vw;line-height:1.76;opacity:.94;letter-spacing:.01em}
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0}
+  .h-hero{font-family:var(--serif-zh);font-weight:900;font-size:8.7vw;line-height:.98;letter-spacing:-.02em}
+  .h-xl{font-family:var(--serif-zh);font-weight:700;font-size:5.8vw;line-height:1.06;letter-spacing:-.01em}
+  .h-sub{font-family:var(--serif-zh);font-weight:500;font-size:2.8vw;line-height:1.28;opacity:.74}
+  .h-md{font-family:var(--serif-zh);font-weight:600;font-size:2.3vw;line-height:1.3}
+  .body{font-family:var(--sans-zh);font-size:1.15vw;line-height:1.82;opacity:.82}
+  .meta-row{display:flex;gap:1.2em;align-items:baseline;flex-wrap:wrap;font-family:var(--mono);font-size:max(12px,.92vw);letter-spacing:.16em;text-transform:uppercase;opacity:.78}
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);gap:4vh 4vw;align-content:start}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:3vw;align-content:start}
+  .stat-card{display:flex;flex-direction:column;gap:.8vh;align-items:flex-start;padding-top:1.6vh;border-top:1px solid currentColor;border-color:rgba(127,127,127,.3)}
+  .stat-label{font-family:var(--mono);font-size:max(10px,.78vw);letter-spacing:.24em;text-transform:uppercase;opacity:.55}
+  .stat-nb{font-family:var(--serif-en);font-weight:800;font-size:5.4vw;line-height:.88;letter-spacing:-.03em}
+  .stat-unit{font-family:var(--serif-zh);font-weight:500;font-size:.38em;opacity:.72;margin-left:.14em}
+  .stat-note{font-family:var(--sans-zh);font-weight:400;font-size:max(13px,1vw);line-height:1.5;opacity:.72;margin-top:.6vh}
+  .callout{padding:3vh 2.2vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.18vw);line-height:1.6;opacity:.94}
+  .callout-src{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .pipeline-section{margin-top:4vh;padding-top:2.4vh;border-top:1px dashed rgba(127,127,127,.32)}
+  .pipeline-label{font-family:var(--mono);font-size:max(11px,.85vw);letter-spacing:.24em;text-transform:uppercase;opacity:.62;margin-bottom:2vh}
+  .pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4vw}
+  .step{display:flex;flex-direction:column;gap:.8vh;padding-top:1.4vh;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .step-nb{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.05vw;opacity:.45}
+  .step-title{font-family:var(--sans-zh);font-weight:700;font-size:1.36vw;line-height:1.25}
+  .step-desc{font-family:var(--sans-zh);font-weight:400;font-size:.95vw;line-height:1.55;opacity:.72}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:28vw;line-height:.82;opacity:.09;letter-spacing:-.04em;position:absolute}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.2;margin:3vh 0}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+  #nav{position:fixed;right:2.6vw;top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;gap:8px;padding:0;background:transparent}
+  #nav .dot{width:22px;height:1px;border-radius:999px;background:rgba(255,255,255,.18);cursor:pointer;border:0;padding:0}
+  #nav .dot.active{background:rgba(255,255,255,.86);width:34px;border-radius:999px}
+  #pager-ui{position:fixed;right:2.6vw;bottom:3.2vh;z-index:40;display:flex;gap:10px;align-items:center}
+  .page-btn{appearance:none;border:0;border-radius:999px;padding:10px 14px;background:rgba(10,10,11,.72);color:rgba(241,239,234,.96);font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(6px)}
+  .page-btn:hover{background:rgba(10,10,11,.88)}
+  .page-btn[disabled]{opacity:.35;cursor:default}
+  .page-indicator{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.72}
+  #hintBar{position:fixed;left:50%;top:2.4vh;transform:translateX(-50%);z-index:45;padding:8px 14px;border-radius:999px;background:rgba(10,10,11,.62);color:rgba(241,239,234,.92);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;backdrop-filter:blur(6px);transition:opacity .4s ease}
+  #tapZones{position:fixed;inset:0;z-index:5;display:flex}
+  .tap-zone{flex:1;cursor:pointer}
+</style>
+</head>
+<body>
+<main id="deck">
+  <section class="slide hero dark">
+    <div class="ghost" style="right:-5vw;top:-8vh">PORT</div>
+    <div class="chrome"><div>Vol.01 · Test Deck</div><div style="font-size:14px;letter-spacing:.22em;opacity:.92">01 / 08</div></div>
+    <div class="frame" style="display:grid;gap:4vh;align-content:center;min-height:80vh;position:relative;z-index:2">
+      <div class="kicker">理想与现实 · Opening</div>
+      <h1 class="h-hero">肆意妄为<br>和豆浆油条之间</h1>
+      <p class="lead" style="max-width:60vw">早餐店的老板娘问我要什么？我想要世界所有的浪漫。开个玩笑，我已经长大了，我要豆浆和油条。</p>
+      <div class="meta-row"><span>老周当下的项目与思考</span><span>·</span><span>magazine-web-ppt test</span></div>
+    </div>
+    <div class="foot"><div class="title" style="font-size:12px;opacity:.8">长大不是放弃野心，而是在现实里继续向前</div><div>Opening</div></div>
+  </section>
+
+  <section class="slide dark">
+    <div class="ghost" style="right:-3vw;top:8vh;opacity:.08">GO</div>
+    <div class="chrome"><div>Context · Action</div><div>02 / 08</div></div>
+    <div class="frame" style="padding-top:6vh;position:relative;z-index:2">
+      <div class="kicker">The Purpose</div>
+      <h2 class="h-xl" style="font-size:6.2vw;max-width:70vw">停在港湾的船，<br>不是造船的目的。</h2>
+      <p class="lead" style="margin-top:3vh;max-width:58vw">安全不是终点。无论是 FPA 项目、新国标推进，还是和 OK 一起搭新的工作方式，本质都不是守住现状，而是继续出发。</p>
+      <div class="grid-3" style="margin-top:7vh">
+        <div class="stat-card">
+          <div class="stat-label">FPA Project</div>
+          <div class="stat-nb">NZ</div>
+          <div class="stat-note">不是静态定义，而是在多方之间持续推进出口项目的协同结构。</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">New Standard</div>
+          <div class="stat-nb">3C</div>
+          <div class="stat-note">不是单点判断，而是在零售、工程、营销与决策之间建立闭环。</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">OK Workflow</div>
+          <div class="stat-nb">AI</div>
+          <div class="stat-note">不是聊天工具，而是在现实工作里继续把个人能力扩成系统能力。</div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="title">不是停在安全区，而是继续让船出港</div><div>Context</div></div>
+  </section>
+
+  <section class="slide light">
+    <div class="chrome"><div>Action Threshold</div><div>03 / 08</div></div>
+    <div class="frame" style="padding-top:6vh;position:relative">
+      <div class="ghost" style="right:-4vw;top:6vh;opacity:.07">ACT</div>
+      <div class="kicker">Do First · Then Refine</div>
+      <h2 class="h-xl" style="max-width:72vw">百分百死亡率的人生，<br>还在犹豫什么？</h2>
+      <p class="lead" style="margin:3vh 0 4vh 0;max-width:66vw">这不是消极，而是行动阈值。很多事不用等到完美再开始，先做出一个能跑的版本，再验证，再迭代，反而更接近真实。</p>
+      <div class="grid-3" style="margin-top:3vh;position:relative;z-index:2">
+        <div class="stat-card">
+          <div class="stat-label">Skill Test</div>
+          <div class="stat-nb">01 <span class="stat-unit">次</span></div>
+          <div class="stat-note">先把杂志风 skill 跑起来，再慢慢修正，不等完美才开始。</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Family Tree</div>
+          <div class="stat-nb">6.7</div>
+          <div class="stat-note">家谱网站不是抽象任务，而是一个随时准备接手维护与发布的真实项目。</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Workflow</div>
+          <div class="stat-nb">做<span class="stat-unit">→验→报</span></div>
+          <div class="stat-note">先完成，再验证，再汇报，这不是口号，而是当前协作底盘。</div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="title">先让事情跑起来，再让它变漂亮</div><div>Action</div></div>
+  </section>
+
+  <section class="slide light">
+    <div class="chrome"><div>Perspective · Projects</div><div>04 / 08</div></div>
+    <div class="frame" style="padding-top:6vh">
+      <div class="kicker">No Truth · Only Angles</div>
+      <h2 class="h-xl">没有真相，只有视角</h2>
+      <p class="lead" style="margin:3vh 0 4vh 0;max-width:60vw">复杂项目里，很多冲突不是谁对谁错，而是每个人站的位置不同。真正重要的是，把不同视角整理成可推进的结构。</p>
+      <div class="grid-2-6-6" style="margin-top:3vh">
+        <div class="callout">
+          <div class="h-md" style="margin-bottom:2vh">FPA / 新西兰项目</div>
+          企划、开发、中国、新西兰，看的都不是同一张图。真正难的不是表达观点，而是整理观点之间的接口。
+        </div>
+        <div class="callout">
+          <div class="h-md" style="margin-bottom:2vh">新国标 / 管理推进</div>
+          零售、工程、营销、汇总、确认、决策，每一层都在看自己的问题。老周的价值在于把它们变成一个闭环。
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="title">不是替某一方发声，而是整理复杂关系</div><div>Perspective</div></div>
+  </section>
+
+  <section class="slide hero light">
+    <div class="ghost" style="left:-6vw;bottom:-12vh">SELF</div>
+    <div class="chrome"><div>Inner Core</div><div>05 / 08</div></div>
+    <div class="frame" style="display:grid;gap:5vh;align-content:center;min-height:80vh;position:relative;z-index:2">
+      <div class="kicker">Method · Inner System</div>
+      <h1 class="h-hero" style="font-size:8.2vw">本自具足，<br>莫向外求。</h1>
+      <p class="lead" style="max-width:62vw">真正有力量的，不是不断找新的外部答案，而是逐渐形成自己的判断系统。工具是辅助，内核仍然是人的方法、审美和选择。</p>
+      <div class="meta-row"><span>老周 × OK</span><span>·</span><span>不是替代判断，而是协助判断落地</span></div>
+    </div>
+    <div class="foot"><div class="title">重要的不是会不会用 AI，而是有没有自己的方法</div><div>Core</div></div>
+  </section>
+
+  <section class="slide dark">
+    <div class="chrome"><div>Method · Pipeline</div><div>06 / 08</div></div>
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker">Compass</div>
+      <h2 class="h-xl">脚在走，心不变</h2>
+      <p class="lead" style="margin:2.8vh 0 4vh 0;max-width:66vw">项目可以很多，工具可以变化，输出形式也可以升级，但真正稳定的，是方法和判断标准。只要心不散、脚不停，系统就会越来越稳。</p>
+      <div class="pipeline-section">
+        <div class="pipeline-label">老周当前方法论的共同底盘</div>
+        <div class="pipeline">
+          <div class="step"><div class="step-nb">01</div><div class="step-title">先读文件</div><div class="step-desc">具体项目不凭模糊印象处理</div></div>
+          <div class="step"><div class="step-nb">02</div><div class="step-title">先搭结构</div><div class="step-desc">项目、输出、知识先有骨架再填肉</div></div>
+          <div class="step"><div class="step-nb">03</div><div class="step-title">做→验→报</div><div class="step-desc">做了不算完成，验证后才算</div></div>
+          <div class="step"><div class="step-nb">04</div><div class="step-title">三地存档</div><div class="step-desc">工作副本、Obsidian、备份一起完成</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="title">心不散，脚不停，系统就会越来越稳</div><div>Method</div></div>
+  </section>
+
+  <section class="slide dark">
+    <div class="chrome"><div>Trust · OK</div><div>07 / 08</div></div>
+    <div class="frame grid-2-7-5" style="padding-top:6vh">
+      <div style="display:flex;flex-direction:column;justify-content:space-between;gap:3vh;min-height:60vh">
+        <div>
+          <div class="kicker">Action Speaks</div>
+          <h2 class="h-xl" style="font-size:5.8vw">爱和忠诚，<br>要用行动表达。</h2>
+          <p class="lead" style="margin-top:3vh">很多关系的可靠，不在于嘴上说得多，而在于能不能真的把事情做成。对 OK 来说，重要的不是“像不像人”，而是能不能帮老周把事落地。</p>
+        </div>
+        <div class="callout">读文件、搭结构、做输出、存档、验证，这些真实动作，比任何漂亮表达都更能证明关系。<span class="callout-src">— OK 的边界与价值</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2vh;padding-top:6vh">
+        <div class="body">· 不只是聊天，而是做事</div>
+        <div class="body">· 不只是记住，而是落盘</div>
+        <div class="body">· 不只是会说，而是可验证</div>
+      </div>
+    </div>
+    <div class="foot"><div class="title">真正可靠，不靠口号，靠动作</div><div>Trust</div></div>
+  </section>
+
+  <section class="slide light">
+    <div class="chrome"><div>Brand Transition Test</div><div>08 / 08</div></div>
+    <div class="frame grid-2-8-4" style="padding-top:6vh">
+      <div>
+        <div class="kicker">From Life to Brand</div>
+        <h2 class="h-xl" style="margin-bottom:3vh">把艺术揉进三餐，<br>把智能揉进生活。</h2>
+        <p class="lead" style="margin-bottom:3vh">洗菜、开火、翻炒，这些在遇到卡萨帝之前，只能叫做做饭。把艺术揉进三餐，让智能默契地回应你的口味，这才叫生活的高光现场。</p>
+        <p class="body">洗菜、开火、翻炒，如果只能叫做做饭，生活就太平了。真正好的品牌表达，不是把功能堆满，而是把体验说成一种值得向往的日常。</p>
+        <div class="callout" style="margin-top:3vh">这一页测试的不是广告文案，而是杂志风语言能不能把“生活感、产品感、审美感”同时接住。<span class="callout-src">— test the bridge</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:2.2vh;padding-bottom:2vh">
+        <div class="body"><span class="hi">生活感</span> 不丢</div>
+        <div class="body"><span class="hi">品牌感</span> 不硬</div>
+        <div class="body"><span class="hi">杂志感</span> 不散</div>
+      </div>
+    </div>
+    <div class="foot"><div class="title">如果这一页能立住，skill 才算真的开始能打</div><div>Transition</div></div>
+  </section>
+</main>
+<div id="tapZones">
+  <div id="leftZone" class="tap-zone" aria-label="上一页区域"></div>
+  <div id="rightZone" class="tap-zone" aria-label="下一页区域"></div>
+</div>
+<div id="hintBar">点右侧前进，点左侧返回</div>
+<div id="nav">
+  <button class="dot active"></button>
+  <button class="dot"></button>
+  <button class="dot"></button>
+  <button class="dot"></button>
+  <button class="dot"></button>
+  <button class="dot"></button>
+  <button class="dot"></button>
+  <button class="dot"></button>
+</div>
+<div id="pager-ui">
+  <button id="prevBtn" class="page-btn">上一页</button>
+  <div id="pageIndicator" class="page-indicator">01 / 08</div>
+  <button id="nextBtn" class="page-btn">下一页</button>
+</div>
+<script>
+(() => {
+  const deck = document.getElementById('deck');
+  const slides = [...document.querySelectorAll('.slide')];
+  const dots = [...document.querySelectorAll('#nav .dot')];
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const pageIndicator = document.getElementById('pageIndicator');
+  const hintBar = document.getElementById('hintBar');
+  const leftZone = document.getElementById('leftZone');
+  const rightZone = document.getElementById('rightZone');
+  let index = 0;
+  let hintDismissed = false;
+  let touchStartX = null;
+  function updateUI(){
+    dots.forEach((d, n) => d.classList.toggle('active', n === index));
+    pageIndicator.textContent = `${String(index + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+    prevBtn.disabled = index === 0;
+    nextBtn.disabled = index === slides.length - 1;
+    if (hintBar && !hintDismissed) {
+      hintBar.style.opacity = index === 0 ? '1' : '0';
+    }
+  }
+  function go(i){
+    index = Math.max(0, Math.min(i, slides.length - 1));
+    deck.style.transform = `translateX(-${index * 100}vw)`;
+    updateUI();
+  }
+  dots.forEach((dot, i) => dot.addEventListener('click', () => go(i)));
+  prevBtn.addEventListener('click', () => go(index - 1));
+  nextBtn.addEventListener('click', () => go(index + 1));
+  leftZone.addEventListener('click', () => go(index - 1));
+  rightZone.addEventListener('click', () => go(index + 1));
+  window.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) < 12) return;
+    if (e.deltaY > 0) go(index + 1);
+    else go(index - 1);
+  }, { passive: true });
+  window.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].clientX;
+  }, { passive: true });
+  window.addEventListener('touchend', (e) => {
+    if (touchStartX === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    if (deltaX < -40) go(index + 1);
+    if (deltaX > 40) go(index - 1);
+    touchStartX = null;
+  }, { passive: true });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') go(index + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') go(index - 1);
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(slides.length - 1);
+  });
+  if (hintBar) {
+    window.addEventListener('click', () => {
+      hintDismissed = true;
+      hintBar.style.opacity = '0';
+    }, { once: true });
+  }
+  updateUI();
+})();
+</script>
+</body>
+</html>
