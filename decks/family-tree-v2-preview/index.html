@@ -24,8 +24,8 @@
       --font-serif: 'STSong', 'Songti SC', 'Noto Serif SC', serif;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: radial-gradient(circle at top, #fffaf3 0%, var(--bg) 52%, #efe5d8 100%); color: var(--text); font-family: var(--font-sans); }
-    body { min-height: 100vh; }
+    html, body { margin: 0; padding: 0; background: radial-gradient(circle at top, #fffaf3 0%, var(--bg) 52%, #efe5d8 100%); color: var(--text); font-family: var(--font-sans); overflow-x: hidden; }
+    body { min-height: 100vh; overflow-x: hidden; }
     .shell { max-width: 960px; margin: 0 auto; padding: 20px 16px 120px; }
     .hero {
       position: sticky; top: 0; z-index: 20; margin: 0 -16px 18px; padding: 16px 16px 14px;
@@ -53,7 +53,7 @@
     .segmented { display: inline-flex; gap: 8px; padding: 6px; border-radius: 999px; width: fit-content; }
     .segmented button { border: 0; background: transparent; border-radius: 999px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: var(--muted); }
     .segmented button.on { background: #fff; color: var(--text); box-shadow: 0 6px 18px rgba(60,44,28,0.10); }
-    .generation-strip { border-radius: 22px; padding: 12px; overflow-x: auto; white-space: nowrap; }
+    .generation-strip { border-radius: 22px; padding: 12px; overflow-x: auto; overflow-y: hidden; white-space: nowrap; -webkit-overflow-scrolling: touch; touch-action: pan-x; }
     .chip { display: inline-flex; align-items: center; gap: 8px; margin-right: 8px; border-radius: 999px; padding: 10px 14px; border: 1px solid rgba(89,68,49,0.08); background: rgba(255,255,255,0.82); color: var(--text); cursor: pointer; }
     .chip.on { background: linear-gradient(135deg, rgba(139,94,52,0.14), rgba(183,135,70,0.18)); border-color: rgba(139,94,52,0.18); }
     .chip-count { color: var(--muted); font-size: 12px; }
@@ -62,8 +62,20 @@
     .tree-row-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
     .tree-row-title { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
     .tree-row-count { font-size: 12px; color: var(--muted); }
-    .tree-scroll { display:flex; gap:12px; overflow-x:auto; padding-bottom:4px; }
+    .tree-scroll { display:flex; gap:12px; overflow-x:auto; overflow-y:hidden; padding-bottom:4px; -webkit-overflow-scrolling: touch; touch-action: pan-x; }
     .tree-node { min-width: 220px; max-width: 220px; background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(247,241,233,0.92)); border:1px solid rgba(89,68,49,0.08); border-radius: 22px; padding: 14px; box-shadow: var(--shadow); }
+    .branch-tree { display:grid; gap:14px; }
+    .branch-root { background: linear-gradient(135deg, rgba(139,94,52,0.10), rgba(255,255,255,0.96)); border:1px solid rgba(139,94,52,0.12); border-radius: 24px; padding: 16px; box-shadow: var(--shadow); }
+    .branch-root-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .branch-root-name { font-size: 22px; font-weight: 900; }
+    .branch-root-meta { margin-top:8px; font-size:13px; color:var(--muted); line-height:1.7; }
+    .branch-groups { display:grid; gap:12px; margin-top:14px; }
+    .branch-group { background: rgba(255,255,255,0.72); border:1px solid rgba(89,68,49,0.08); border-radius: 20px; padding: 12px; }
+    .branch-group-title { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+    .branch-children { display:flex; gap:10px; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; touch-action:pan-x; padding-bottom:2px; }
+    .branch-child-card { min-width:190px; max-width:190px; background:#fff; border:1px solid rgba(89,68,49,0.08); border-radius:18px; padding:12px; box-shadow: 0 8px 22px rgba(58,41,24,0.08); }
+    .branch-child-name { font-size:16px; font-weight:800; }
+    .branch-child-meta { margin-top:6px; font-size:12px; line-height:1.6; color:var(--muted); }
     .tree-node-name { font-size: 18px; font-weight: 800; }
     .tree-node-meta { margin-top: 8px; font-size: 13px; line-height: 1.6; color: var(--muted); }
     .tree-node-line { margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap; }
@@ -293,35 +305,91 @@
       });
     }
 
+    function buildChildrenMap(list) {
+      const map = new Map();
+      list.forEach(item => {
+        const key = item.p || 0;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(item);
+      });
+      return map;
+    }
+
     function renderTree() {
       const wrap = document.getElementById('treeRows');
       const note = document.getElementById('treeNote');
       wrap.innerHTML = '';
       const list = filteredList();
-      const grouped = generations().map(gen => ({ gen, items: list.filter(x => x.gen === gen) })).filter(x => x.items.length);
-      note.textContent = `当前展示 ${grouped.length} 个代际层，按横向滑动查看同代人物。`;
-      grouped.forEach(group => {
-        const row = document.createElement('section');
-        row.className = 'tree-row';
-        const itemsHtml = group.items.map(item => `
-          <article class="tree-node" data-tree-id="${item.id}">
-            <div class="tree-node-name">${item.n || '未命名成员'}</div>
-            <div class="tree-node-meta">${item.b || '生年待补'}${item.d ? ' · ' + item.d : ''}<br/>上级：${parentName(item)}${item.s ? '<br/>配偶：' + item.s : ''}</div>
-            <div class="tree-node-line">
-              <span class="tree-mini-chip">第 ${item.gen || '-'} 代</span>
-              <span class="tree-mini-chip">ID ${item.id}</span>
+      const childrenMap = buildChildrenMap(list);
+      const roots = list.filter(x => !x.p);
+      note.textContent = `当前按根节点分支显示 ${roots.length} 条主枝，优先保留家谱分支关系，而不是简单平铺。`;
+
+      const branchTree = document.createElement('div');
+      branchTree.className = 'branch-tree';
+
+      roots.forEach(root => {
+        const rootEl = document.createElement('section');
+        rootEl.className = 'branch-root';
+        const generationsUnderRoot = [];
+        let frontier = [root];
+        let depth = 1;
+        while (frontier.length && depth < 8) {
+          const next = [];
+          frontier.forEach(node => {
+            const kids = childrenMap.get(node.id) || [];
+            kids.forEach(k => next.push(k));
+          });
+          if (next.length) generationsUnderRoot.push({ depth: depth + 1, items: next });
+          frontier = next;
+          depth += 1;
+        }
+
+        rootEl.innerHTML = `
+          <div class="branch-root-head">
+            <div>
+              <div class="branch-root-name">${root.n || '未命名根节点'}</div>
+              <div class="branch-root-meta">${root.bio || '家族主枝入口'}<br/>${root.b || '生年待补'}${root.d ? ' · ' + root.d : ''}</div>
             </div>
-          </article>
-        `).join('');
-        row.innerHTML = `
-          <div class="tree-row-head">
-            <div class="tree-row-title">第 ${group.gen} 代</div>
-            <div class="tree-row-count">${group.items.length} 人</div>
+            <div class="generation-badge">主枝</div>
           </div>
-          <div class="tree-scroll">${itemsHtml}</div>
         `;
-        wrap.appendChild(row);
+
+        const groups = document.createElement('div');
+        groups.className = 'branch-groups';
+
+        if (!generationsUnderRoot.length) {
+          const empty = document.createElement('div');
+          empty.className = 'section-note';
+          empty.textContent = '该主枝当前没有更多下级成员。';
+          groups.appendChild(empty);
+        } else {
+          generationsUnderRoot.forEach(group => {
+            const block = document.createElement('div');
+            block.className = 'branch-group';
+            block.innerHTML = `<div class="branch-group-title">下展开至第 ${group.depth} 代 · ${group.items.length} 人</div>`;
+            const scroller = document.createElement('div');
+            scroller.className = 'branch-children';
+            group.items.forEach(item => {
+              const card = document.createElement('article');
+              card.className = 'branch-child-card';
+              card.dataset.treeId = item.id;
+              card.innerHTML = `
+                <div class="branch-child-name">${item.n || '未命名成员'}</div>
+                <div class="branch-child-meta">上级：${parentName(item)}<br/>${item.s ? '配偶：' + item.s + '<br/>' : ''}${item.bio || '点击查看详情'}</div>
+                <div class="tree-node-line"><span class="tree-mini-chip">第 ${item.gen || '-'} 代</span></div>
+              `;
+              scroller.appendChild(card);
+            });
+            block.appendChild(scroller);
+            groups.appendChild(block);
+          });
+        }
+
+        rootEl.appendChild(groups);
+        branchTree.appendChild(rootEl);
       });
+
+      wrap.appendChild(branchTree);
       wrap.querySelectorAll('[data-tree-id]').forEach(el => {
         el.addEventListener('click', () => openDetail(Number(el.dataset.treeId)));
       });
